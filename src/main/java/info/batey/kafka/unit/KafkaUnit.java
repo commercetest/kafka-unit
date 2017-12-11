@@ -164,7 +164,7 @@ public class KafkaUnit {
         createTopic(topicName, 1);
     }
 
-    public void createTopic(String topicName, Integer numPartitions) {
+    private void createTopic(String topicName, Integer numPartitions) {
         // setup
         String[] arguments = new String[9];
         arguments[0] = "--create";
