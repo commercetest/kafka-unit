@@ -109,6 +109,13 @@ If you want to start server on specific ports, use `KafkaUnitRule(int, int)` or 
     public KafkaUnitRule kafkaUnitRule = new KafkaUnitRule(5000, 5001);
 ```
 
+To run just one class of tests, and see the logger output, try this, or similar:
+`./gradlew --info test --tests *KafkaAssumptionsTest -Dlog4j.debug`
+
+`--info` asks Gradle to write informational messages to the console
+`test --tests ...` specifies which test class to run, note the leading `*` is vital, or you can provide the full package name.
+`-Dlog4j.debug` provides useful log4j debugging information.
+
 ## License
 
 ```

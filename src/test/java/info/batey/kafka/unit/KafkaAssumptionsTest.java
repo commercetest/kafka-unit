@@ -63,7 +63,7 @@ public class KafkaAssumptionsTest {
         int recordsChecked = 0;
         while (recordsChecked < RECORDS_TO_PROCESS) {
             List<ConsumerRecord<String, String>> receivedMessages =
-                kafkaUnitServer.readKeyedMessages(testTopic, -1);
+                kafkaUnitServer.readKeyedMessages(testTopic, -1, 4000L);
             for (ConsumerRecord<String, String> message : receivedMessages) {
                 long currentTimestamp = message.timestamp();
                 LOGGER.info(String.format("Msg[%d] timestamp[%d]", recordsChecked, currentTimestamp));
