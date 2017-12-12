@@ -14,13 +14,15 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 
 public class KafkaAssumptionsTest {
+    private static final int RECORDS_TO_PROCESS = 150;
+
     private KafkaUnit kafkaUnitServer;
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaIntegrationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaAssumptionsTest.class);
 
     @Before
     public void setUp() {
@@ -48,21 +50,32 @@ public class KafkaAssumptionsTest {
         kafkaUnitServer.createTopic(testTopic);
 
         //when
-        for (int recordToWrite = 0; recordToWrite < 120; recordToWrite++) {
+        for (int recordToWrite = 0; recordToWrite < RECORDS_TO_PROCESS; recordToWrite++) {
             // TODO optimize the sending
-            ProducerRecord<String, String> keyedMessage = new ProducerRecord<>(testTopic, "key", "value");
+            ProducerRecord<String, String> keyedMessage =
+                    new ProducerRecord<>(testTopic, "key", "value:" + recordToWrite);
             LOGGER.info("sending message:" + recordToWrite + ":" + keyedMessage);
             kafkaUnitServer.sendMessages(keyedMessage);
         }
 
-        List<ConsumerRecord<String, String>> receivedMessages = kafkaUnitServer.readKeyedMessages(testTopic, -1);
+        //then try to read all the messages we've written.
         long previousTimestamp = -1L;
-        for (int recordToCheck = 0; recordToCheck < 120; recordToCheck++) {
-            ConsumerRecord<String, String> message = receivedMessages.get(recordToCheck);
-            long currentTimestamp = message.timestamp();
-            // TODO add the record it fails on. Also might be worth checking all the records...
-            assertThat("Timestamp shouldn't be equal or less than previous value", currentTimestamp, greaterThan(previousTimestamp));
-            previousTimestamp = currentTimestamp;
+        int recordsChecked = 0;
+        while (recordsChecked < RECORDS_TO_PROCESS) {
+            List<ConsumerRecord<String, String>> receivedMessages =
+                kafkaUnitServer.readKeyedMessages(testTopic, -1);
+            for (ConsumerRecord<String, String> message : receivedMessages) {
+                long currentTimestamp = message.timestamp();
+                LOGGER.info(String.format("Msg[%d] timestamp[%d]", recordsChecked, currentTimestamp));
+                // TODO add the record it fails on. Also might be worth checking all the records...
+                assertThat("Timestamp shouldn't be equal or less than previous value",
+                        currentTimestamp, greaterThan(previousTimestamp));
+                assertThat("Timestamp should not be null!", currentTimestamp, not(nullValue()));
+                previousTimestamp = currentTimestamp;
+                recordsChecked++;
+                assertThat("We read more records than we wrote",
+                        recordsChecked, lessThanOrEqualTo(RECORDS_TO_PROCESS));
+            }
         }
     }
 }
