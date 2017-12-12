@@ -45,7 +45,7 @@ public class KafkaIntegrationTest {
     private KafkaUnit kafkaUnitServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         kafkaUnitServer = new KafkaUnit(5000, 5001);
         kafkaUnitServer.setKafkaBrokerConfig("log.segment.bytes", "1024");
         kafkaUnitServer.startup();
@@ -102,7 +102,7 @@ public class KafkaIntegrationTest {
     }
 
     @Test
-    public void canListTopics() throws Exception{
+    public void canListTopics() {
         String testTopic1 = "TestTopic1";
         kafkaUnitServer.createTopic(testTopic1);
         String testTopic2 = "TestTopic2";
@@ -138,6 +138,7 @@ public class KafkaIntegrationTest {
         assertKafkaServerIsAvailable(noParamServer);
         assertTrue("Kafka port needs to be non-negative", noParamServer.getBrokerPort() > 0);
         assertTrue("Zookeeper port needs to be non-negative", noParamServer.getZkPort() > 0);
+        // TODO should we shutdown the server before finishing this test?
     }
 
     @Test
@@ -172,7 +173,7 @@ public class KafkaIntegrationTest {
     }
 
     @Test(timeout = 30000)
-    public void closeConnectionBetweenTopicCreations() throws Exception{
+    public void closeConnectionBetweenTopicCreations() {
         String topicPrefix = "TestTopic";
         for(int i = 0; i < 17; i++){
             kafkaUnitServer.createTopic(topicPrefix + i);
