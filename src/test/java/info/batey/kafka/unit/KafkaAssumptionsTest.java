@@ -3,7 +3,6 @@ package info.batey.kafka.unit;
 import kafka.server.KafkaServerStartable;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.hamcrest.CoreMatchers.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,8 @@ public class KafkaAssumptionsTest {
         kafkaUnitServer = new KafkaUnit(5000, 5001);
         kafkaUnitServer.setKafkaBrokerConfig(
                 "log.segment.bytes", String.valueOf(LOG_SEGMENT_BYTES));
+        kafkaUnitServer.setKafkaBrokerConfig("buffer.memory", "33554432");
+        kafkaUnitServer.setKafkaBrokerConfig("batch.size", "16384");
         kafkaUnitServer.startup();
     }
 
@@ -63,9 +64,10 @@ public class KafkaAssumptionsTest {
         //then try to read all the messages we've written.
         long previousTimestamp = -1L;
         int recordsChecked = 0;
+        long timeout = 4500L;
         while (recordsChecked < RECORDS_TO_PROCESS) {
             List<ConsumerRecord<String, String>> receivedMessages =
-                kafkaUnitServer.readKeyedMessages(testTopic, -1, 4000L);
+                kafkaUnitServer.readKeyedMessages(testTopic, -1, timeout);
             for (ConsumerRecord<String, String> message : receivedMessages) {
                 long currentTimestamp = message.timestamp();
                 LOGGER.info(String.format("Msg[%d] timestamp[%d]", recordsChecked, currentTimestamp));

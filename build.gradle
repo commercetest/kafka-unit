@@ -109,7 +109,7 @@ dependencies {
         exclude module: 'jmxri'
         exclude module: 'jms'
     }
-    compile('org.apache.zookeeper:zookeeper:3.4.10') {
+    compile('org.apache.zookeeper:zookeeper:3.4.11') {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
     }
