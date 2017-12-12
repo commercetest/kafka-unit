@@ -19,7 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class KafkaAssumptionsTest {
-    private static final int RECORDS_TO_PROCESS = 150;
+    private static final int LOG_SEGMENT_BYTES = 131072;
+    private static final int RECORDS_TO_PROCESS = 1500;
 
     private KafkaUnit kafkaUnitServer;
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaAssumptionsTest.class);
@@ -27,7 +28,8 @@ public class KafkaAssumptionsTest {
     @Before
     public void setUp() {
         kafkaUnitServer = new KafkaUnit(5000, 5001);
-        kafkaUnitServer.setKafkaBrokerConfig("log.segment.bytes", "1024");
+        kafkaUnitServer.setKafkaBrokerConfig(
+                "log.segment.bytes", String.valueOf(LOG_SEGMENT_BYTES));
         kafkaUnitServer.startup();
     }
 
@@ -38,7 +40,7 @@ public class KafkaAssumptionsTest {
         Field f = kafkaUnitServer.getClass().getDeclaredField("broker");
         f.setAccessible(true);
         KafkaServerStartable broker = (KafkaServerStartable) f.get(kafkaUnitServer);
-        assertEquals(1024, (int)broker.serverConfig().logSegmentBytes());
+        assertEquals(LOG_SEGMENT_BYTES, (int)broker.serverConfig().logSegmentBytes());
 
         kafkaUnitServer.shutdown();
     }
